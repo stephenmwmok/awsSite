@@ -25,13 +25,39 @@ export default function App() {
   const [userprofiles, setUserProfiles] = useState([]);
   const { signOut } = useAuthenticator((context) => [context.user]);
 
-  // Run this once on component mount to load the script
+ 
+
   useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  async function fetchUserProfile() {
+    const { data: profiles } = await client.models.UserProfile.list();
+    setUserProfiles(profiles);
+  }
+
+   // Run this once on component mount to load the script
+   useEffect(() => {
     // Function to initialize the embedded messaging
     function initEmbeddedMessaging() {
       try {
         // Assuming `embeddedservice_bootstrap` is available globally
         embeddedservice_bootstrap.settings.language = 'en_US';  // Set language (as an example)
+		
+		window.addEventListener("onEmbeddedMessagingReady", () => 
+        {
+            console.log("Received the onEmbeddedMessagingReady event…");
+
+            // Send token to Salesforce
+    
+            embeddedservice_bootstrap.userVerificationAPI.setIdentityToken
+            ({
+            identityTokenType : "JWT", 
+
+            //identityToken :"{The JWT token key value that we created in Stage 4}"
+            identityToken :"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImFkbWluVGVzdCJ9.eyJzdWIiOiJzdGVwaGVubXdtb2tAZ21haWwuY29tIiwiaXNzIjoiU01PSyIsImV4cCI6MTc2NjE1Mjk5OH0.a-ffQv0Y1j9vrRyw4pqFbPEtVpMsYYGxocUmgHWnFj61Dr7wL4jFhFYIcET0dM0vVI5CFeODTfj6uSWPmT5QumG3iykf8E8domditJ8f4sP68LnIYazuq_NPmg7agfj9LNpUYfG3Id4aWklRA-OCWJOOZb1wEFQ-LBQiBJLFd4Awqx6EfehaeBHCZZMhKeNqv7Gqsl42rI2MP3xj89VOL1HI5YLZVo3nDrsbDeFM19_edP1eIMkoVA04kQ1C21fgSPH3rY9T4HexnnnIZe_EEezxVuAn8l0T6oJifd4o29fIkKDYzdUW1bFlDzYxjESQME-WeWu_AP93XdC6OzuFvQ"
+            });
+        });
 
         embeddedservice_bootstrap.init(
 				'00DHu00000B6CWL',
@@ -58,15 +84,6 @@ export default function App() {
       document.body.removeChild(script);
     };
   }, []); // Empty dependency array ensures it runs once on mount
-
-  useEffect(() => {
-    fetchUserProfile();
-  }, []);
-
-  async function fetchUserProfile() {
-    const { data: profiles } = await client.models.UserProfile.list();
-    setUserProfiles(profiles);
-  }
 
   return (
     <Flex
