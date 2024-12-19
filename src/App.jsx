@@ -13,10 +13,10 @@ import { Amplify } from "aws-amplify";
 import "@aws-amplify/ui-react/styles.css";
 import { generateClient } from "aws-amplify/data";
 import outputs from "../amplify_outputs.json";
+
 /**
  * @type {import('aws-amplify/data').Client<import('../amplify/data/resource').Schema>}
  */
-
 Amplify.configure(outputs);
 const client = generateClient({
   authMode: "userPool",
@@ -24,24 +24,37 @@ const client = generateClient({
 
 export default function App() {
   const [userprofiles, setUserProfiles] = useState([]);
-  const { signOut,user } = useAuthenticator((context) => [context.user]);
+  const { signOut, user } = useAuthenticator((context) => [context.user]);
+  const [session, setSession] = useState(null);
 
- 
+  // Fetch user profile data
+  function fetchUserProfile() {
+    client.models.UserProfile.list()
+      .then(response => {
+        const profiles = response.data;
+        setUserProfiles(profiles);
+      })
+      .catch(error => {
+        console.error("Error fetching user profiles:", error);
+      });
+  }
 
-	function fetchUserProfile() {
-		client.models.UserProfile.list()
-		.then(response => {
-		  const profiles = response.data;
-		  setUserProfiles(profiles);
-		})
-		.catch(error => {
-		  console.error("Error fetching user profiles:", error);
-		});
-	}
-  const session = await fetchAuthSession();   // Fetch the authentication session
-	// Retrieve the ID token
+  // Fetch the authentication session asynchronously
+  useEffect(() => {
+    async function fetchSession() {
+      try {
+        const session = await fetchAuthSession();
+        setSession(session);  // Store session in state
+      } catch (error) {
+        console.error("Error fetching auth session:", error);
+      }
+    }
+
+    fetchSession();  // Invoke async function inside useEffect
+  }, []);
+
+  // Retrieve the ID Token
   const getIdToken = () => {
-	 
     if (user && user.signInUserSession) {
       const idToken = user.signInUserSession.idToken.jwtToken;
       console.log("ID Token:", idToken);
@@ -50,63 +63,50 @@ export default function App() {
     return null;
   };
 
-   // Run this once on component mount to load the script
-   useEffect(() => {
+  // Run once on component mount to load the external script and initialize messaging
+  useEffect(() => {
     // Function to initialize the embedded messaging
     function initEmbeddedMessaging() {
       try {
-		  
-		client.models.UserProfile.list()
-		.then(response => {
-		  const profiles = response.data;
-		  console.log(profiles);
-		  setUserProfiles(profiles);
-		  
-		  console.log(userprofiles);
-		  
-		  
-		  console.log('Access Token:', session.tokens.accessToken.toString());
-		  console.log('ID Token:', session.tokens.idToken.toString());
-		  
-		  const idToken = getIdToken();
-			if (idToken) {
-			  // You can use the ID token here, e.g., send it to an API
-			  console.log("Retrieved ID Token:", idToken);
-			}
-		   
-			// Assuming `embeddedservice_bootstrap` is available globally
-			embeddedservice_bootstrap.settings.language = 'en_US';  // Set language (as an example)
-			
-			window.addEventListener("onEmbeddedMessagingReady", () => 
-			{
-				console.log("Received the onEmbeddedMessagingReady event…");
+        client.models.UserProfile.list()
+          .then(response => {
+            const profiles = response.data;
+            console.log(profiles);
+            setUserProfiles(profiles);
 
-				// Send token to Salesforce
+            console.log(userprofiles);
 
-				embeddedservice_bootstrap.userVerificationAPI.setIdentityToken
-				({
-				identityTokenType : "JWT", 
-				identityTokenType : idToken
-				//identityToken :"{The JWT token key value that we created in Stage 4}"
-				//identityToken :"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImFkbWluVGVzdCJ9.eyJzdWIiOiJzdGVwaGVubXdtb2tAZ21haWwuY29tIiwiaXNzIjoiU01PSyIsImV4cCI6MTc2NjE1Mjk5OH0.a-ffQv0Y1j9vrRyw4pqFbPEtVpMsYYGxocUmgHWnFj61Dr7wL4jFhFYIcET0dM0vVI5CFeODTfj6uSWPmT5QumG3iykf8E8domditJ8f4sP68LnIYazuq_NPmg7agfj9LNpUYfG3Id4aWklRA-OCWJOOZb1wEFQ-LBQiBJLFd4Awqx6EfehaeBHCZZMhKeNqv7Gqsl42rI2MP3xj89VOL1HI5YLZVo3nDrsbDeFM19_edP1eIMkoVA04kQ1C21fgSPH3rY9T4HexnnnIZe_EEezxVuAn8l0T6oJifd4o29fIkKDYzdUW1bFlDzYxjESQME-WeWu_AP93XdC6OzuFvQ"
-				});
-			});
+            // Ensure session is available before attempting to use tokens
+            if (session) {
+              console.log('Access Token:', session.tokens.accessToken.toString());
+              console.log('ID Token:', session.tokens.idToken.toString());
 
-			embeddedservice_bootstrap.init(
-					'00DHu00000B6CWL',
-					'customSite',
-					'https://sl1730395447847.my.site.com/ESWcustomSite1734566894070',
-					{
-						scrt2URL: 'https://sl1730395447847.my.salesforce-scrt.com'
-					}
-				);
-		})
-		.catch(error => {
-		  console.error("Error fetching user profiles:", error);
-		});
-		
-		
-		
+              // Assuming `embeddedservice_bootstrap` is available globally
+              embeddedservice_bootstrap.settings.language = 'en_US';  // Set language (as an example)
+
+              window.addEventListener("onEmbeddedMessagingReady", () => {
+                console.log("Received the onEmbeddedMessagingReady event…");
+
+                // Send token to Salesforce
+                embeddedservice_bootstrap.userVerificationAPI.setIdentityToken({
+                  identityTokenType: "JWT", 
+                  identityToken: session.tokens.idToken.toString()  // Correct usage of session token
+                });
+              });
+
+              embeddedservice_bootstrap.init(
+                '00DHu00000B6CWL',
+                'customSite',
+                'https://sl1730395447847.my.site.com/ESWcustomSite1734566894070',
+                {
+                  scrt2URL: 'https://sl1730395447847.my.salesforce-scrt.com'
+                }
+              );
+            }
+          })
+          .catch(error => {
+            console.error("Error fetching user profiles:", error);
+          });
       } catch (err) {
         console.error('Error loading Embedded Messaging: ', err);
       }
@@ -123,7 +123,7 @@ export default function App() {
     return () => {
       document.body.removeChild(script);
     };
-  }, []); // Empty dependency array ensures it runs once on mount
+  }, [session]); // Dependency on session to run after session is fetched
 
   return (
     <Flex
