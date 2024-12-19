@@ -23,7 +23,7 @@ const client = generateClient({
 
 export default function App() {
   const [userprofiles, setUserProfiles] = useState([]);
-  const { signOut } = useAuthenticator((context) => [context.user]);
+  const { signOut,user } = useAuthenticator((context) => [context.user]);
 
  
 
