@@ -27,10 +27,6 @@ export default function App() {
 
  
 
-  useEffect(() => {
-    fetchUserProfile();
-  }, []);
-
   async function fetchUserProfile() {
     const { data: profiles } = await client.models.UserProfile.list();
     setUserProfiles(profiles);
@@ -41,7 +37,7 @@ export default function App() {
     // Function to initialize the embedded messaging
     function initEmbeddedMessaging() {
       try {
-		  
+		fetchUserProfile();  
 		console.log(userprofiles);
         // Assuming `embeddedservice_bootstrap` is available globally
         embeddedservice_bootstrap.settings.language = 'en_US';  // Set language (as an example)
