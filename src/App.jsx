@@ -25,6 +25,40 @@ export default function App() {
   const [userprofiles, setUserProfiles] = useState([]);
   const { signOut } = useAuthenticator((context) => [context.user]);
 
+  // Run this once on component mount to load the script
+  useEffect(() => {
+    // Function to initialize the embedded messaging
+    function initEmbeddedMessaging() {
+      try {
+        // Assuming `embeddedservice_bootstrap` is available globally
+        embeddedservice_bootstrap.settings.language = 'en_US';  // Set language (as an example)
+
+        embeddedservice_bootstrap.init(
+          '00DHu00000B6CWL',
+          'X407etr',
+          'https://sl1730395447847.my.site.com/ESWX407etr1732130422409',
+          {
+            scrt2URL: 'https://sl1730395447847.my.salesforce-scrt.com'
+          }
+        );
+      } catch (err) {
+        console.error('Error loading Embedded Messaging: ', err);
+      }
+    }
+
+    // Dynamically create and add the script tag to load the external script
+    const script = document.createElement('script');
+    script.src = 'https://sl1730395447847.my.site.com/ESWX407etr1732130422409/assets/js/bootstrap.min.js';
+    script.type = 'text/javascript';
+    script.onload = initEmbeddedMessaging; // Initialize messaging once the script loads
+    document.body.appendChild(script);
+
+    // Cleanup function to remove the script when the component unmounts
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []); // Empty dependency array ensures it runs once on mount
+
   useEffect(() => {
     fetchUserProfile();
   }, []);
