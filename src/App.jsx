@@ -8,10 +8,11 @@ import {
   Divider,
 } from "@aws-amplify/ui-react";
 import { useAuthenticator } from "@aws-amplify/ui-react";
-import { Amplify } from "aws-amplify";
+import { Amplify, Auth } from "aws-amplify";
 import "@aws-amplify/ui-react/styles.css";
 import { generateClient } from "aws-amplify/data";
 import outputs from "../amplify_outputs.json";
+
 /**
  * @type {import('aws-amplify/data').Client<import('../amplify/data/resource').Schema>}
  */
@@ -25,79 +26,62 @@ export default function App() {
   const [userprofiles, setUserProfiles] = useState([]);
   const { signOut } = useAuthenticator((context) => [context.user]);
 
- 
+  // Fetch user profiles
+  async function fetchUserProfile() {
+    try {
+      const response = await client.models.UserProfile.list();
+      const profiles = response.data;
+      setUserProfiles(profiles);
+    } catch (error) {
+      console.error("Error fetching user profiles:", error);
+    }
+  }
 
-	function fetchUserProfile() {
-		client.models.UserProfile.list()
-		.then(response => {
-		  const profiles = response.data;
-		  setUserProfiles(profiles);
-		})
-		.catch(error => {
-		  console.error("Error fetching user profiles:", error);
-		});
-	}
-
-
-   // Run this once on component mount to load the script
-   useEffect(() => {
-    // Function to initialize the embedded messaging
-    function initEmbeddedMessaging() {
+  useEffect(() => {
+    // Initialize the embedded messaging script and fetch user profiles
+    async function initEmbeddedMessaging() {
       try {
-		client.models.UserProfile.list()
-		.then(response => {
-		  const profiles = response.data;
-		  console.log(profiles);
-		  setUserProfiles(profiles);
-		  
-		  console.log(userprofiles);
-		  
-		   const session = await Auth.currentSession();
-		   const idToken = session.getIdToken().getJwtToken();
-	
-			console.log(idToken);
-			// Assuming `embeddedservice_bootstrap` is available globally
-			embeddedservice_bootstrap.settings.language = 'en_US';  // Set language (as an example)
-			
-			window.addEventListener("onEmbeddedMessagingReady", () => 
-			{
-				console.log("Received the onEmbeddedMessagingReady event…");
+        // Fetch user profiles and set them in state
+        await fetchUserProfile();  // Fetch profiles asynchronously
 
-				// Send token to Salesforce
+        // Get the current session and extract the JWT token
+        const session = await Auth.currentSession();
+        const idToken = session.getIdToken().getJwtToken();
 
-				embeddedservice_bootstrap.userVerificationAPI.setIdentityToken
-				({
-				identityTokenType : "JWT", 
-				identityToken : idToken
-				//identityToken :"{The JWT token key value that we created in Stage 4}"
-				//identityToken :"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImFkbWluVGVzdCJ9.eyJzdWIiOiJzdGVwaGVubXdtb2tAZ21haWwuY29tIiwiaXNzIjoiU01PSyIsImV4cCI6MTc2NjE1Mjk5OH0.a-ffQv0Y1j9vrRyw4pqFbPEtVpMsYYGxocUmgHWnFj61Dr7wL4jFhFYIcET0dM0vVI5CFeODTfj6uSWPmT5QumG3iykf8E8domditJ8f4sP68LnIYazuq_NPmg7agfj9LNpUYfG3Id4aWklRA-OCWJOOZb1wEFQ-LBQiBJLFd4Awqx6EfehaeBHCZZMhKeNqv7Gqsl42rI2MP3xj89VOL1HI5YLZVo3nDrsbDeFM19_edP1eIMkoVA04kQ1C21fgSPH3rY9T4HexnnnIZe_EEezxVuAn8l0T6oJifd4o29fIkKDYzdUW1bFlDzYxjESQME-WeWu_AP93XdC6OzuFvQ"
-				});
-			});
+        console.log("User Profiles:", userprofiles); // User profiles are now set
+        console.log("JWT Token:", idToken); // JWT Token from current session
 
-			embeddedservice_bootstrap.init(
-					'00DHu00000B6CWL',
-					'customSite',
-					'https://sl1730395447847.my.site.com/ESWcustomSite1734566894070',
-					{
-						scrt2URL: 'https://sl1730395447847.my.salesforce-scrt.com'
-					}
-				);
-		})
-		.catch(error => {
-		  console.error("Error fetching user profiles:", error);
-		});
-		
-		
-		
+        // Assuming `embeddedservice_bootstrap` is available globally
+        embeddedservice_bootstrap.settings.language = "en_US"; // Set language
+
+        window.addEventListener("onEmbeddedMessagingReady", () => {
+          console.log("Received the onEmbeddedMessagingReady event…");
+
+          // Send token to Salesforce
+          embeddedservice_bootstrap.userVerificationAPI.setIdentityToken({
+            identityTokenType: "JWT",
+            identityToken: idToken,
+          });
+        });
+
+        embeddedservice_bootstrap.init(
+          "00DHu00000B6CWL",
+          "customSite",
+          "https://sl1730395447847.my.site.com/ESWcustomSite1734566894070",
+          {
+            scrt2URL: "https://sl1730395447847.my.salesforce-scrt.com",
+          }
+        );
       } catch (err) {
-        console.error('Error loading Embedded Messaging: ', err);
+        console.error("Error loading Embedded Messaging: ", err);
       }
     }
 
     // Dynamically create and add the script tag to load the external script
-    const script = document.createElement('script');
-    script.src = 'https://sl1730395447847.my.site.com/ESWX407etr1732130422409/assets/js/bootstrap.min.js';
-    script.type = 'text/javascript';
+    const script = document.createElement("script");
+    script.src =
+      "https://sl1730395447847.my.site.com/ESWX407etr1732130422409/assets/js/bootstrap.min.js";
+    script.type = "text/javascript";
     script.onload = initEmbeddedMessaging; // Initialize messaging once the script loads
     document.body.appendChild(script);
 
