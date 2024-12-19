@@ -51,6 +51,11 @@ export default function App() {
 		  setUserProfiles(profiles);
 		  
 		  console.log(userprofiles);
+		  
+		   const session = await Auth.currentSession();
+		   const idToken = session.getIdToken().getJwtToken();
+	
+			console.log(idToken);
 			// Assuming `embeddedservice_bootstrap` is available globally
 			embeddedservice_bootstrap.settings.language = 'en_US';  // Set language (as an example)
 			
@@ -63,9 +68,9 @@ export default function App() {
 				embeddedservice_bootstrap.userVerificationAPI.setIdentityToken
 				({
 				identityTokenType : "JWT", 
-
+				identityToken : idToken
 				//identityToken :"{The JWT token key value that we created in Stage 4}"
-				identityToken :"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImFkbWluVGVzdCJ9.eyJzdWIiOiJzdGVwaGVubXdtb2tAZ21haWwuY29tIiwiaXNzIjoiU01PSyIsImV4cCI6MTc2NjE1Mjk5OH0.a-ffQv0Y1j9vrRyw4pqFbPEtVpMsYYGxocUmgHWnFj61Dr7wL4jFhFYIcET0dM0vVI5CFeODTfj6uSWPmT5QumG3iykf8E8domditJ8f4sP68LnIYazuq_NPmg7agfj9LNpUYfG3Id4aWklRA-OCWJOOZb1wEFQ-LBQiBJLFd4Awqx6EfehaeBHCZZMhKeNqv7Gqsl42rI2MP3xj89VOL1HI5YLZVo3nDrsbDeFM19_edP1eIMkoVA04kQ1C21fgSPH3rY9T4HexnnnIZe_EEezxVuAn8l0T6oJifd4o29fIkKDYzdUW1bFlDzYxjESQME-WeWu_AP93XdC6OzuFvQ"
+				//identityToken :"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImFkbWluVGVzdCJ9.eyJzdWIiOiJzdGVwaGVubXdtb2tAZ21haWwuY29tIiwiaXNzIjoiU01PSyIsImV4cCI6MTc2NjE1Mjk5OH0.a-ffQv0Y1j9vrRyw4pqFbPEtVpMsYYGxocUmgHWnFj61Dr7wL4jFhFYIcET0dM0vVI5CFeODTfj6uSWPmT5QumG3iykf8E8domditJ8f4sP68LnIYazuq_NPmg7agfj9LNpUYfG3Id4aWklRA-OCWJOOZb1wEFQ-LBQiBJLFd4Awqx6EfehaeBHCZZMhKeNqv7Gqsl42rI2MP3xj89VOL1HI5YLZVo3nDrsbDeFM19_edP1eIMkoVA04kQ1C21fgSPH3rY9T4HexnnnIZe_EEezxVuAn8l0T6oJifd4o29fIkKDYzdUW1bFlDzYxjESQME-WeWu_AP93XdC6OzuFvQ"
 				});
 			});
 
