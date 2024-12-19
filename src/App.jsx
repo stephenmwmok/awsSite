@@ -38,7 +38,7 @@ export default function App() {
 		  console.error("Error fetching user profiles:", error);
 		});
 	}
-
+  const session = await fetchAuthSession();   // Fetch the authentication session
 	// Retrieve the ID token
   const getIdToken = () => {
 	 
@@ -64,7 +64,7 @@ export default function App() {
 		  
 		  console.log(userprofiles);
 		  
-		  const session = await fetchAuthSession();   // Fetch the authentication session
+		  
 		  console.log('Access Token:', session.tokens.accessToken.toString());
 		  console.log('ID Token:', session.tokens.idToken.toString());
 		  
