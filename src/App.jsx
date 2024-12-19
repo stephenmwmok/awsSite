@@ -27,10 +27,17 @@ export default function App() {
 
  
 
-  async function fetchUserProfile() {
-    const { data: profiles } = await client.models.UserProfile.list();
-    setUserProfiles(profiles);
-  }
+	function fetchUserProfile() {
+		client.models.UserProfile.list()
+		.then(response => {
+		  const profiles = response.data;
+		  setUserProfiles(profiles);
+		})
+		.catch(error => {
+		  console.error("Error fetching user profiles:", error);
+		});
+	}
+
 
    // Run this once on component mount to load the script
    useEffect(() => {
