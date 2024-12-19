@@ -42,7 +42,7 @@ export default function App() {
     function initEmbeddedMessaging() {
       try {
 		  
-		console.log(userprofile);
+		console.log(userprofiles);
         // Assuming `embeddedservice_bootstrap` is available globally
         embeddedservice_bootstrap.settings.language = 'en_US';  // Set language (as an example)
 		
