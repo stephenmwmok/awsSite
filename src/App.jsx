@@ -8,6 +8,7 @@ import {
   Divider,
 } from "@aws-amplify/ui-react";
 import { useAuthenticator } from "@aws-amplify/ui-react";
+import { fetchAuthSession } from '@aws-amplify/auth';
 import { Amplify } from "aws-amplify";
 import "@aws-amplify/ui-react/styles.css";
 import { generateClient } from "aws-amplify/data";
@@ -40,6 +41,7 @@ export default function App() {
 
 	// Retrieve the ID token
   const getIdToken = () => {
+	 
     if (user && user.signInUserSession) {
       const idToken = user.signInUserSession.idToken.jwtToken;
       console.log("ID Token:", idToken);
@@ -53,6 +55,7 @@ export default function App() {
     // Function to initialize the embedded messaging
     function initEmbeddedMessaging() {
       try {
+		  
 		client.models.UserProfile.list()
 		.then(response => {
 		  const profiles = response.data;
@@ -60,6 +63,10 @@ export default function App() {
 		  setUserProfiles(profiles);
 		  
 		  console.log(userprofiles);
+		  
+		  const session = await fetchAuthSession();   // Fetch the authentication session
+		  console.log('Access Token:', session.tokens.accessToken.toString());
+		  console.log('ID Token:', session.tokens.idToken.toString());
 		  
 		  const idToken = getIdToken();
 			if (idToken) {
