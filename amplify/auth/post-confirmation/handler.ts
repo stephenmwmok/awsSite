@@ -4,6 +4,7 @@ import { Amplify } from "aws-amplify";
 import { generateClient } from "aws-amplify/data";
 import { env } from "$amplify/env/post-confirmation";
 import { createUserProfile } from "./graphql/mutations";
+import * as AWS from 'aws-sdk';
 
 Amplify.configure(
   {
@@ -37,6 +38,8 @@ const client = generateClient<Schema>({
   authMode: "iam",
 });
 
+const lambda = new AWS.Lambda();
+
 export const handler: PostConfirmationTriggerHandler = async (event) => {
   console.log(JSON.stringify(event));
   await client.graphql({
@@ -50,6 +53,20 @@ export const handler: PostConfirmationTriggerHandler = async (event) => {
       },
     },
   });
+
+  const lambdaParams = {
+    FunctionName: 'slalomAccountCreation-lambda-fn',  // Replace with your Lambda function name
+    InvocationType: 'Event',  // Asynchronous invocation
+    Payload: event,
+  };
+
+  // Call another Lambda function
+  try {
+    const lambdaResponse = await lambda.invoke(lambdaParams).promise();
+    console.log("Successfully invoked Lambda:", lambdaResponse);
+  } catch (error) {
+    console.error("Error invoking Lambda:", error);
+  }
 
   return event;
 };
