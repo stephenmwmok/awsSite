@@ -12,7 +12,9 @@ export const getUserProfile = /* GraphQL */ `query GetUserProfile($id: ID!) {
   getUserProfile(id: $id) {
     createdAt
     email
+    firstName
     id
+    lastName
     profileOwner
     updatedAt
     __typename
@@ -31,7 +33,9 @@ export const listUserProfiles = /* GraphQL */ `query ListUserProfiles(
     items {
       createdAt
       email
+      firstName
       id
+      lastName
       profileOwner
       updatedAt
       __typename
