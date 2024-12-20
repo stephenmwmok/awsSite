@@ -38,6 +38,7 @@ const client = generateClient<Schema>({
 });
 
 export const handler: PostConfirmationTriggerHandler = async (event) => {
+  console.log(JSON.stringify(event));
   await client.graphql({
     query: createUserProfile,
     variables: {
