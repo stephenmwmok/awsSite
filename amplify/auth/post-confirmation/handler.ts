@@ -55,7 +55,7 @@ export const handler: PostConfirmationTriggerHandler = async (event) => {
   });
 
   const lambdaParams = {
-    FunctionName: 'slalomAccountCreation-lambda-fn',  // Replace with your Lambda function name
+    FunctionName: 'arn:aws:lambda:us-east-1:863615190391:function:slalomAccountCreation-lambda-fn',  // Replace with your Lambda function name
     InvocationType: 'Event',  // Asynchronous invocation
     Payload: event,
   };
