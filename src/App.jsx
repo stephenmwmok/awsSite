@@ -14,9 +14,7 @@ import "@aws-amplify/ui-react/styles.css";
 import { generateClient } from "aws-amplify/data";
 import outputs from "../amplify_outputs.json";
 
-/**
- * @type {import('aws-amplify/data').Client<import('../amplify/data/resource').Schema>}
- */
+// Set up AWS Amplify configuration
 Amplify.configure(outputs);
 const client = generateClient({
   authMode: "userPool",
@@ -53,6 +51,42 @@ export default function App() {
     fetchSession();  // Invoke async function inside useEffect
   }, []);
 
+  // Handle sign-out action
+  const handleSignOut = async () => {
+    try {
+      // Perform any necessary operations before sign out, like logging out from embedded services
+      console.log("Preparing to sign out...");
+
+      // Add your custom sign-out logic here, e.g., clearing tokens or notifying external systems
+      // For instance, clear embedded messaging or notify an API
+      if (window.embeddedservice_bootstrap) {
+        // If embedded service exists, call necessary cleanup methods
+        console.log("Cleaning up embedded messaging...");
+
+        embeddedservice_bootstrap.userVerificationAPI
+        .clearSession()
+        .then(() => {
+          // Add actions to run after the session is cleared successfully.
+        })
+        .catch((error) => {
+          // Add actions to run after clearing the session fails.
+        })
+        .finally(() => {
+          // Add actions to run whether the chat client launches
+          // successfully or not.
+        });
+      }
+
+      // Proceed to sign out
+      await signOut();
+
+      // Optionally, run additional code after sign-out
+      console.log("User signed out successfully!");
+    } catch (error) {
+      console.error("Error during sign-out:", error);
+    }
+  };
+
   // Retrieve the ID Token
   const getIdToken = () => {
     if (user && user.signInUserSession) {
@@ -73,8 +107,6 @@ export default function App() {
             const profiles = response.data;
             console.log(profiles);
             setUserProfiles(profiles);
-
-            console.log(userprofiles);
 
             // Ensure session is available before attempting to use tokens
             if (session) {
@@ -163,7 +195,7 @@ export default function App() {
           </Flex>
         ))}
       </Grid>
-      <Button onClick={signOut}>Sign Out</Button>
+      <Button onClick={handleSignOut}>Sign Out</Button>
     </Flex>
   );
 }
